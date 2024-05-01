@@ -6,6 +6,7 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\EnsureAuthTokenIsValid;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -19,6 +20,11 @@ Route::get('/surveys/{survey_uid}', [SurveyController::class, 'show'])->name('su
 // {
 //
 // });
+
+Route::get('/test', function()
+{
+    return "SUCCESS";
+})->middleware(EnsureAuthTokenIsValid::class);
 
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
 

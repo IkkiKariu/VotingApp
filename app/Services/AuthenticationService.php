@@ -30,8 +30,13 @@ class AuthenticationService
         return $token->plainTextToken;
     }
 
-    public function tokenIsValid(string $token): bool
+    public function tokenIsValid(string|null $token): bool
     {
+        if(!$token)
+        {
+            return false;
+        }
+
         $guessedToken = PersonalAccessToken::where('token', hash('sha256', explode('|', $token)[1]))->first();
 
         return $guessedToken ? true : false; 
