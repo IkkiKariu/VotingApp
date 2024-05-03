@@ -12,7 +12,13 @@ use App\Http\Middleware\EnsureAuthTokenIsValid;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
-Route::get('/users/{user_id}', [UserController::class, 'show'])->name('users.show');
+
+
+Route::prefix('/user')->group(function() {
+    Route::get('/', [UserController::class, 'show'])->name('user.show')->middleware(EnsureAuthTokenIsValid::class);
+    Route::get('/delete', [UserController::class, 'delete'])->name('user.delete')->middleware(EnsureAuthTokenIsValid::class);
+    }
+);
 
 Route::get('/surveys/participated/{user_id}', [SurveyController::class, 'index'])->name('surveys.participated.index');
 Route::get('/surveys/{survey_uid}', [SurveyController::class, 'show'])->name('surveys.show');

@@ -3,12 +3,12 @@ namespace App\DTO;
 
 class UserDTO
 {
-    readonly string $login;
-    readonly string $password;
-    readonly string $name;
+    readonly string|null $login;
+    readonly string|null $password;
+    readonly string|null $name;
     readonly string|null $bio;
 
-    public function __construct(string $login, string $password, string $name, string|null $bio)
+    public function __construct(string|null $login, string|null  $password, string|null $name, string|null $bio)
     {
         $this->login = $login;
         $this->password = $password;
