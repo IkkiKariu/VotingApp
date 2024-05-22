@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Repositories\SurveyRepository;
-
+use App\DTO\CreateSurveyDTO;
+use App\Models\PersonalAccessToken;
 
 class SurveyController extends Controller
 {
@@ -16,17 +17,47 @@ class SurveyController extends Controller
         $this->repository = $repository;
     }
 
-    public function index(int $user_id)
+    public function index(Request $request)
     {
-        $surveys = $this->repository->getParticipatedSurveys($user_id);
+        $token = $request->bearerToken();
 
-        return $surveys != null ? $surveys->toArray() : null;
+        $surveys = $this->repository->getParticipatedSurveys($token);
+
+        return response()->json($surveys != null ? $surveys->toArray() : null);
     }
 
-    public function show(string $uid)
+    public function show(Request $request)
     {
-        $survey = $this->repository->getSurveyData($uid);
+        $data = $request->json()->all();
+        $survey = $this->repository->getSurveyData($data['survey_public_uid']);
 
-        return $survey != null ? $survey->toArray() : null;
+        return response()->json($survey != null ? $survey->toArray() : null);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->json()->all();
+
+        $this->repository->createSurvey($request->bearerToken(), new CreateSurveyDTO($data['title'],
+                                                                                     $data['content'],
+                                                                                     $data['hasMultipleChoice'],
+                                                                                     $data['decisions']));
+
+        
+    }
+
+    public function delete(Request $request)
+    {
+        $data = $request->json()->all();
+        $token = $request->bearerToken();
+
+        $complete_status = $this->repository->deleteSurvey($token, $data['survey_public_uid']);
+
+        if(!$complete_status)
+        {
+            return response()->json(['response_status' => 'failure']);
+        }
+
+        return response()->json(['response_status' => 'success']);
     }
 }

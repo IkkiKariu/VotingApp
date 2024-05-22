@@ -20,7 +20,8 @@ class Survey extends Model
         'content',
         'is_published',
         'published_at',
-        'public_uid'
+        'public_uid',
+        'has_multiple_choice'
     ];
 
     protected function casts()
@@ -31,7 +32,8 @@ class Survey extends Model
             'content' => 'string',
             'is_published' => 'boolean',
             'published_at' => 'datetime',
-            'public_uid' => 'string'
+            'public_uid' => 'string',
+            'has_multiple_choice' => 'boolean'
         ];
     }
 
