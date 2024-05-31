@@ -90,13 +90,18 @@ class SurveyRepository
         return true;
     }
 
-    public function createVote(string $userToken, string $surveyPublicUid, string $decisionId): bool
+    public function createVote(string $userToken, string $surveyPublicUid, int $decisionId): bool
     {
         $user = $this->getUserByToken($userToken);
 
         $survey = Survey::where('public_uid', $surveyPublicUid)->first();
 
         $decision = Decision::where('id', $decisionId)->first();
+
+        if(!$survey || !$decision)
+        {
+            return false;
+        }
 
         $guessedVote = Vote::where('decision_id', $decisionId)->where('user_id', $user->id)->first();
 
@@ -170,15 +175,15 @@ class SurveyRepository
             }
         }
 
-        foreach($decisionIdList as $key => $value)
-        {
-            $vote = Vote::where('decision_uid', $value)->where('user_id', $user->id)->first();
+        // foreach($decisionIdList as $key => $value)
+        // {
+        //     $vote = Vote::where('decision_uid', $value)->where('user_id', $user->id)->first();
 
-            if(!$vote)
-            {
-                return false;
-            }
-        }
+        //     if(!$vote)
+        //     {
+        //         return false;
+        //     }
+        // }
 
         if(!Participation::where('user_id', $user->id)->where('survey_id', $guessedSurvey->id)->first())
         {
@@ -187,9 +192,15 @@ class SurveyRepository
 
         foreach($decisionIdList as $key => $value)
         {
-            $vote = Vote::where('decision_uid', $value)->where('user_id', $user->id)->first();
-
-            $vote->delete();
+            $vote = Vote::where('decision_id', $value)->where('user_id', $user->id)->first();
+            $decision = Decision::where('id', $value)->first();
+            
+            if($vote)
+            {
+                $vote->delete();
+                $decision->vote_count -= 1;
+                $decision->save();
+            }
         }
 
         $participation = Participation::where('user_id', $user->id)->where('survey_id', $guessedSurvey->id)->first();
@@ -197,4 +208,25 @@ class SurveyRepository
 
         return true;
     }
+
+    public function getParticipation(string $userToken, $surveyPublicUid): bool
+    {
+        $user = $this->getUserByToken($userToken);
+        $guessedSurvey = Survey::where('public_uid', $surveyPublicUid)->first();
+        
+        if(!$guessedSurvey)
+        {
+            return false;
+        }
+
+        $guessedParticipation = Participation::where('user_id', $user->id)->where('survey_id', $guessedSurvey->id)->first();
+
+        if(!$guessedParticipation)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 }

@@ -7,7 +7,7 @@ use App\Repositories\SurveyRepository;
 use App\DTO\CreateSurveyDTO;
 use App\Models\PersonalAccessToken;
 
-class SurveyController extends Controller
+class SurveyController extends APIController
 {
     protected SurveyRepository $repository;
     
@@ -23,7 +23,7 @@ class SurveyController extends Controller
 
         $surveys = $this->repository->getParticipatedSurveys($token);
 
-        return response()->json($surveys != null ? $surveys->toArray() : null);
+        return response()->json(['response_status' => 'success', 'data' => $surveys != null ? $surveys->toArray() : null]);
     }
 
     public function show(Request $request)
@@ -59,5 +59,24 @@ class SurveyController extends Controller
         }
 
         return response()->json(['response_status' => 'success']);
+    }
+
+    public function isVoted(Request $request)
+    {
+        $data = $request->json()->all();
+        $token = $request->bearerToken();
+
+        if(!$this->validateJsonRequest($data, ['survey_public_uid' => 'required']))
+        {
+            return response()->json(['response_status' => 'failure']);
+        }
+
+        if($this->repository->getParticipation($token, $data['survey_public_uid']))
+        {
+            return response()->json(['response_status' => 'success', 'data' => ['is_participated' => true]]);
+        }
+        else{
+            return response()->json(['response_status' => 'success', 'data' => ['is_participated' => false]]);
+        }
     }
 }
